@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+# Import files from polls directory
+from  django.urls import include
+
 urlpatterns = [
+    # NOTE: URL endpath and python file location
+    path('polls/', include('polls.urls')),
     path('admin/', admin.site.urls),
 ]
