@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'polls.apps.PollsConfig', # Connect Polls' database to this settings.py
     'django.contrib.admin', # Admin site
     'django.contrib.auth', # Authentication system
     'django.contrib.contenttypes', # Framework for content types
