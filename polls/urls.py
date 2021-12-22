@@ -3,6 +3,9 @@
 from django.urls import path
 from . import views
 
+# Add namespace for Django to distinguish apps
+app_name = "polls"
+
 urlpatterns = [
     # E.g., /polls/
     path('', views.index, name='index'),
