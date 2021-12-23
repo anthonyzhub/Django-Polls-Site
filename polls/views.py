@@ -1,62 +1,66 @@
+from typing import Generic
 from django.http.response import Http404
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.shortcuts import render, get_object_or_404
-from .models import Question
+from django.urls import reverse
+from django.views import generic
+from .models import Question, Choice
 
 # Create your views (webpage) here.
-def index(request):
+"""
+generic.ListView => display a list of objects
+generic.DetailView => Display a detail page for a specific object
+"""
+class IndexView(generic.ListView):
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
 
-    # OBJECTIVE: Get the last 5 questions based on publication date
+    def get_queryset(self):
+        return Question.objects.order_by("-publication_date")
 
-    # Get the last 5 questions
-    try:
-        latest_question_list = Question.objects.order_by("-publication_date")[:5]
+class DetailView(generic.DetailView):
 
-    # If there aren't any quesitons, return 404
-    except Question.DoesNotExist:
-        raise Http404("Question does not exist")
+    model = Question # <= Each generic view needs to know what modeil it will be acting upon
+    template_name = "polls/detail.html"
 
-    
-    """
-    === METHOD 1 ===:
-
-    # Load template for index page
-    template = loader.get_template("polls/index.html")
-    context = {"latest_question_list": latest_question_list} # <= Maps template variable names to Python objects
-
-    # Return questions with template format
-    return HttpResponse(template.render(context, request))
-    """
-    
-    # === Method 2 ===
-
-    # Map template variable name to Python object
-    context = {"latest_question_list": latest_question_list}
-
-    # Return HttpResponse with template format
-    # NOTE: render(<request object>, <template path>, [dictionary])
-    return render(request, "polls/index.html", context)
-
-def detail(request, question_id):
-
-    # OBJECTIVE: Display latest few questions
-
-    # Get question based on id
-    # NOTE: If question is not found, return HTTP 404 error
-    question = get_object_or_404(Question, pk=question_id)
-
-    # Map template variable name to Python object
-    context = {"question": question}
-
-    # Return question in template format
-    return render(request, "polls/detail.html", context)
-
-def results(request, question_id):
-    # OBJECTIVE: Display a question text without any results by with a form to vote
-    return HttpResponse(f"You're looking at the results of question '{question_id}'")
+class ResultsView(generic.DetailView):
+    model = Question # <= Each generic view needs to know what modeil it will be acting upon
+    template_name = "polls/results.html"
 
 def vote(request, question_id):
+
     # OBJECTIVE: Display results for a particular question
-    return HttpResponse(f"You're voting on question '{question_id}'")
+    
+    # Get question or 404 error message
+    question = get_object_or_404(Question, pk=question_id)
+
+    # Get vote
+    try:
+
+        # Filter POST data by getting "choice" string
+        # NOTE: request.POST is a dictionary
+        selected_choice = question.choice_set.get(pk=request.POST["choice"])
+    
+    # If "choice" is not found, return error message
+    except (KeyError, Choice.DoesNotExist):
+
+        # Create a dict for future use
+        context = {
+            "question": question,
+            "error_message": "You didn't select a choice"
+        }
+
+        # Return HttpRepsonse with "detail.html" format
+        return render(request, "polls/detail.html", context)
+
+    else:
+
+        # Increment vote and save change in database
+        selected_choice.votes += 1
+        selected_choice.save()
+
+        # Return HttpResponseRedirect to redirect user after handling POST data
+        # NOTE: This will prevent a double vote in case user clicks "back" button
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))

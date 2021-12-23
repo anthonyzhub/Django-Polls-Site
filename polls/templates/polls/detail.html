@@ -1,6 +1,24 @@
-<h1>{{ question.question_text }}</h1>
-<ul>
-{% for choice in question.choice_set.all %}
-    <li>{{ choice.choice_text }}</li>
-{% endfor %}
-</ul>
+<form action="{% url 'polls:vote' question.id %}" method="post">
+    
+    {# Prevents "Cross Site Request Forgeries" #}
+    {% csrf_token %}
+    <fieldset>
+
+        {# Display question #}
+        <legend><h1>{{ question.question_text }}</h1></legend>
+
+        {# Display error message #}
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        
+        {# Iterate list #}
+        {% for choice in question.choice_set.all %}
+
+            {# Display choice button and answer options #}
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+            <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+        {% endfor %}
+    </fieldset>
+
+    {# Display submit type button #}
+    <input type="submit" value="Vote">
+</form>
