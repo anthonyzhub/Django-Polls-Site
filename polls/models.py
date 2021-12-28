@@ -25,7 +25,13 @@ class Question(models.Model):
         return self.question_text
 
     def was_published_recently(self):
-        return self.publication_date >= timezone.now() - timedelta(days=1)
+        
+        # Get current time
+        now = timezone.now()
+
+        # Return True, if (1) it's been less than a day, (2) publication date is older than current time, (3) "now" is newer than "publication_date"
+        # I.e. Return True if question is ONLY less than a day old
+        return now - timedelta(days=1) <= self.publication_date <= now
 
 # OBJECTIVE: Create a new model called "Choice" where it will hold a Question instance, text of choice, and a vote tally
 class Choice(models.Model):
