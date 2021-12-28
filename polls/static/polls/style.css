@@ -1,0 +1,10 @@
+/* Set link color to green */
+li a {
+    color: green;
+}
+
+/* Add background image */
+body {
+    background: white url("images/City.gif")
+    no-repeat; /* <= By commenting code, multiple GIFs will fill the screen */
+}
