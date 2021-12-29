@@ -8,6 +8,7 @@ Remember the three-step guide to making model changes:
 """
 from django.db import models
 from django.utils import timezone
+from django.contrib import admin
 
 from datetime import timedelta
 
@@ -20,9 +21,15 @@ class Question(models.Model):
     question_text = models.CharField(max_length=200)
     publication_date = models.DateTimeField("Date Published")
 
-    # When object is called, return quesiton_text
     def __str__(self):
+        # OBJECT: When object is called, return quesiton_text
         return self.question_text
+
+    @admin.display(
+        boolean=True,
+        ordering="publication_date",
+        description="Published recently?"
+    )
 
     def was_published_recently(self):
         
